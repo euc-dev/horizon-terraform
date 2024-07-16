@@ -18,9 +18,11 @@ jobs:
         with:
           go-version: '1.22'
       - name: Build Code
-        run: go build -o ./src
+        working-directory: ./src
+        run: go build -o terraform-provider-horizonview
       - name: Test Code
-        run: go test -o ./src -json > TestResults-${{ matrix.os }}.json
+        working-directory: ./src
+        run: go test -o .terraform-provider-horizonview -json > TestResults-${{ matrix.os }}.json
       - name: Upload Test Results
         uses: actions/upload-artifact@v4
         with:
