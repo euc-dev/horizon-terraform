@@ -3,3 +3,4 @@
 **/.DS_Store
 site/*
 .site/*
+src/terraform-provider-horizonview
