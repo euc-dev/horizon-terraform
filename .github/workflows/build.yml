@@ -27,4 +27,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Go-results-${{ matrix.os }}
-          path: TestResults-${{ matrix.os }}.json
+          path: src/TestResults-${{ matrix.os }}.json
