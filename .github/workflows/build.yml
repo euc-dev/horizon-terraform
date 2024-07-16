@@ -20,6 +20,12 @@ jobs:
       - name: Build Code
         working-directory: ./src
         run: go build -o terraform-provider-horizonview
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-provider-horizonview-${{ matrix.os }}
+          path: src/terraform-provider-horizonview
+          compression-level: 6
       - name: Test Code
         working-directory: ./src
         run: go test -o .terraform-provider-horizonview -json > TestResults-${{ matrix.os }}.json
