@@ -1,0 +1,18 @@
+# Use [configuration inheritance](https://www.mkdocs.org/user-guide/configuration/#configuration-inheritance)
+# to inherit most settings and allow overrides for local preview/test
+INHERIT: mkdocs.yml
+
+# override site name/url
+site_name: Terraform Provider for Terraform
+site_url: https://localhost/
+
+# add navigation for local testing/previewing
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Data Sources:
+    - data/index.md
+  - Provider: 
+    - provider/index.md
+  - Resources:
+    - resources/index.md
