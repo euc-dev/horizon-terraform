@@ -47,7 +47,7 @@ jobs:
         shell: pwsh
 
       - name: Upload Compressed Artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: terraform-provider-horizonview-${{ matrix.os }}
           path: terraform-provider-horizonview-${{ matrix.os }}.zip
