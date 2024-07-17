@@ -20,7 +20,7 @@ jobs:
           go-version: '1.22'
 
       - name: Build Provider
-        working-directory: ./src
+        run: |
          if [[ "${{ matrix.os }}" == 'windows-latest' ]]; then
             go build -o terraform-provider-horizonview.exe
           elif [[ "${{ matrix.os }}" == 'macos-latest' ]]; then
@@ -28,6 +28,7 @@ jobs:
           else
             GOOS=linux GOARCH=amd64 go build -o terraform-provider-horizonview
           fi
+        working-directory: ./src
           
       - name: Compress Build Artifacts
         run: |
