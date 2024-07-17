@@ -32,16 +32,19 @@ jobs:
         shell: bash
         working-directory: ./src
           
-      - name: Compress Build Artifacts
+      - name: Compress Build Artifacts on Linux and macOS
+        if: runner.os != 'Windows'
         run: |
           cd src
-          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-            zip -r -9 terraform-provider-view-${{ matrix.os }}.zip terraform-provider-view.exe
-          else
-            zip -r -9 terraform-provider-view-${{ matrix.os }}.zip terraform-provider-view
-          fi
+          zip -r -9 terraform-provider-view-${{ matrix.os }}.zip terraform-provider-view
           mv terraform-provider-view-${{ matrix.os }}.zip ../
         shell: bash
+
+      - name: Compress Build Artifacts on Windows
+        if: runner.os == 'Windows'
+        run: |
+          Compress-Archive -Path src\terraform-provider-view.exe -DestinationPath terraform-provider-view-${{ matrix.os }}.zip
+        shell: pwsh
 
       - name: Upload Compressed Artifacts
         uses: actions/upload-artifact@v2
