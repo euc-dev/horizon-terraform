@@ -15,7 +15,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v5
         with:
           go-version: '1.22'
 
@@ -30,18 +30,28 @@ jobs:
             GOOS=linux GOARCH=amd64 go build -o terraform-provider-horizonview
           fi
 
-      - name: Upload Build Artifacts
+      - name: Compress Build Artifacts
+        run: |
+          cd src
+          if [ ${{ matrix.os }} == 'windows-latest' ]; then
+            zip -r -9 terraform-provider-horizonview-${{ matrix.os }}.zip terraform-provider-horizonview.exe
+          else
+            zip -r -9 terraform-provider-horizonview-${{ matrix.os }}.zip terraform-provider-horizonview
+          fi
+          mv terraform-provider-horizonview-${{ matrix.os }}.zip ../
+
+      - name: Upload Compressed Artifacts
         uses: actions/upload-artifact@v2
         with:
           name: terraform-provider-horizonview-${{ matrix.os }}
-          path: src/terraform-provider-horizonview${{ matrix.os == 'windows-latest' ? '.exe' : '' }}
-
+          path: terraform-provider-horizonview-${{ matrix.os }}.zip
+          
       - name: Test Code
         working-directory: ./src
         run: go test -o .terraform-provider-horizonview -json > TestResults-${{ matrix.os }}.json
 
       - name: Upload Test Results
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: Go-results-${{ matrix.os }}
           path: src/TestResults-${{ matrix.os }}.json
