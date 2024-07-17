@@ -21,24 +21,27 @@ jobs:
 
       - name: Build Provider
         run: |
-         if [[ "${{ matrix.os }}" == 'windows-latest' ]]; then
-            go build -o terraform-provider-horizonview.exe
-          elif [[ "${{ matrix.os }}" == 'macos-latest' ]]; then
-            GOOS=darwin GOARCH=amd64 go build -o terraform-provider-horizonview
+          echo "Building provider for OS: ${{ matrix.os }}"
+          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+            go build -o terraform-provider-view.exe
+          elif [[ "${{ matrix.os }}" == "macos-latest" ]]; then
+            GOOS=darwin GOARCH=amd64 go build -o terraform-provider-view
           else
-            GOOS=linux GOARCH=amd64 go build -o terraform-provider-horizonview
+            GOOS=linux GOARCH=amd64 go build -o terraform-provider-view
           fi
+        shell: bash
         working-directory: ./src
           
       - name: Compress Build Artifacts
         run: |
-         cd src
-          if [[ "${{ matrix.os }}" == 'windows-latest' ]]; then
-            zip -r -9 terraform-provider-horizonview-${{ matrix.os }}.zip terraform-provider-horizonview.exe
+          cd src
+          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+            zip -r -9 terraform-provider-view-${{ matrix.os }}.zip terraform-provider-view.exe
           else
-            zip -r -9 terraform-provider-horizonview-${{ matrix.os }}.zip terraform-provider-horizonview
+            zip -r -9 terraform-provider-view-${{ matrix.os }}.zip terraform-provider-view
           fi
-          mv terraform-provider-horizonview-${{ matrix.os }}.zip ../
+          mv terraform-provider-view-${{ matrix.os }}.zip ../
+        shell: bash
 
       - name: Upload Compressed Artifacts
         uses: actions/upload-artifact@v2
@@ -49,6 +52,7 @@ jobs:
       - name: Test Code
         working-directory: ./src
         run: go test -o .terraform-provider-horizonview -json > TestResults-${{ matrix.os }}.json
+        shell: bash
 
       - name: Upload Test Results
         uses: actions/upload-artifact@v4
