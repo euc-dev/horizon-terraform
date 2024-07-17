@@ -21,19 +21,18 @@ jobs:
 
       - name: Build Provider
         working-directory: ./src
-        run: |
-          if [ "${{ matrix.os }}" == 'windows-latest' ]; then
-            go build -o terraform-provider-view.exe
-          elif [ "${{ matrix.os }}" == 'macos-latest' ]; then
+         if [[ "${{ matrix.os }}" == 'windows-latest' ]]; then
+            go build -o terraform-provider-horizonview.exe
+          elif [[ "${{ matrix.os }}" == 'macos-latest' ]]; then
             GOOS=darwin GOARCH=amd64 go build -o terraform-provider-horizonview
           else
             GOOS=linux GOARCH=amd64 go build -o terraform-provider-horizonview
           fi
-
+          
       - name: Compress Build Artifacts
         run: |
          cd src
-          if [ "${{ matrix.os }}" == 'windows-latest' ]; then
+          if [[ "${{ matrix.os }}" == 'windows-latest' ]]; then
             zip -r -9 terraform-provider-horizonview-${{ matrix.os }}.zip terraform-provider-horizonview.exe
           else
             zip -r -9 terraform-provider-horizonview-${{ matrix.os }}.zip terraform-provider-horizonview
