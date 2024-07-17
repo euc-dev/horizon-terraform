@@ -13,24 +13,35 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v2
         with:
           go-version: '1.22'
-      - name: Build Code
+
+      - name: Build Provider
         working-directory: ./src
-        run: go build -o terraform-provider-horizonview
+        run: |
+          if [ ${{ matrix.os }} == 'windows-latest' ]; then
+            go build -o terraform-provider-horizonview.exe
+          elif [ ${{ matrix.os }} == 'macos-latest' ]; then
+            GOOS=darwin GOARCH=amd64 go build -o terraform-provider-horizonview
+          else
+            GOOS=linux GOARCH=amd64 go build -o terraform-provider-horizonview
+          fi
+
       - name: Upload Build Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v2
         with:
           name: terraform-provider-horizonview-${{ matrix.os }}
-          path: src/terraform-provider-horizonview
-          compression-level: 6
+          path: src/terraform-provider-horizonview${{ matrix.os == 'windows-latest' ? '.exe' : '' }}
+
       - name: Test Code
         working-directory: ./src
         run: go test -o .terraform-provider-horizonview -json > TestResults-${{ matrix.os }}.json
+
       - name: Upload Test Results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v2
         with:
           name: Go-results-${{ matrix.os }}
           path: src/TestResults-${{ matrix.os }}.json
