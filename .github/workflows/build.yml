@@ -36,30 +36,23 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           zip -j terraform-provider-horizonview-linux_amd64.zip src/terraform-provider-horizonview
+          sha256sum terraform-provider-horizonview-linux_amd64.zip | sed 's/ .*/ terraform-provider-horizonview-linux_amd64.zip/' >> checksums.txt
         shell: bash
 
       - name: Compress Build Artifacts on macOS
         if: runner.os == 'macOS'
         run: |
           zip -j terraform-provider-horizonview-darwin_amd64.zip src/terraform-provider-horizonview
+          sha256sum terraform-provider-horizonview-darwin_amd64.zip | sed 's/ .*/ terraform-provider-horizonview-darwin_amd64.zip/' >> checksums.txt
         shell: bash
 
       - name: Compress Build Artifacts on Windows
         if: runner.os == 'Windows'
         run: |
           Compress-Archive -Path src\terraform-provider-horizonview.exe -DestinationPath terraform-provider-horizonview-windows_amd64.zip
+          sha256sum terraform-provider-horizonview-windows_amd64.zip | sed 's/ .*/ terraform-provider-horizonview-windows_amd64.zip/' >> checksums.txt
         shell: pwsh
 
-      - name: Generate Checksum
-        run: |
-          if [[ "${{ runner.os }}" == "Windows" ]]; then
-            sha256sum terraform-provider-horizonview-windows_amd64.zip | sed 's/ .*/ terraform-provider-horizonview-windows_amd64.zip/' >> checksums.txt
-          elif [[ "${{ runner.os }}" == "macOS" ]]; then
-            sha256sum terraform-provider-horizonview-darwin_amd64.zip | sed 's/ .*/ terraform-provider-horizonview-darwin_amd64.zip/' >> checksums.txt
-          else
-            sha256sum terraform-provider-horizonview-linux_amd64.zip | sed 's/ .*/ terraform-provider-horizonview-linux_amd64.zip/' >> checksums.txt
-        shell: bash
-        
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
