@@ -9,7 +9,6 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest]
-        arch: [amd64]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout Code
@@ -22,61 +21,43 @@ jobs:
 
       - name: Build Provider
         run: |
-          echo "Building provider for OS: ${{ matrix.os }} and ARCH: ${{ matrix.arch }}"
+          echo "Building provider for OS: ${{ matrix.os }}"
           if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-            GOOS=windows GOARCH=${{ matrix.arch }} go build -o terraform-provider-horizonview.exe
+            go build -o terraform-provider-horizonview.exe
           elif [[ "${{ matrix.os }}" == "macos-latest" ]]; then
-            GOOS=darwin GOARCH=${{ matrix.arch }} go build -o terraform-provider-horizonview
+            GOOS=darwin GOARCH=amd64 go build -o terraform-provider-horizonview
           else
-            GOOS=linux GOARCH=${{ matrix.arch }} go build -o terraform-provider-horizonview
+            GOOS=linux GOARCH=amd64 go build -o terraform-provider-horizonview
           fi
         shell: bash
         working-directory: ./src
-
+          
       - name: Compress Build Artifacts on Linux and macOS
         if: runner.os != 'Windows'
         run: |
           cd src
-          zip -r -9 ../terraform-provider-horizonview-${{ runner.os == 'Linux' && 'linux' || 'darwin' }}_${{ matrix.arch }}.zip terraform-provider-horizonview
+          zip -r -9 terraform-provider-horizonview-${{ matrix.os }}.zip terraform-provider-horizonview
         shell: bash
 
       - name: Compress Build Artifacts on Windows
         if: runner.os == 'Windows'
         run: |
-          Compress-Archive -Path src\terraform-provider-horizonview.exe -DestinationPath terraform-provider-horizonview-windows_${{ matrix.arch }}.zip
+          Compress-Archive -Path src\terraform-provider-horizonview.exe -DestinationPath terraform-provider-horizonview-${{ matrix.os }}.zip
         shell: pwsh
 
       - name: Upload Compressed Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: terraform-provider-horizonview-${{ matrix.os }}-${{ matrix.arch }}
-          path: terraform-provider-horizonview-${{ runner.os == 'Linux' && 'linux' || runner.os == 'macOS' && 'darwin' || 'windows' }}_${{ matrix.arch }}.zip
-
-      - name: Generate Checksum
-        run: |
-          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-            sha256sum terraform-provider-horizonview-windows_${{ matrix.arch }}.zip >> checksums.txt
-          elif [[ "${{ matrix.os }}" == "macos-latest" ]]; then
-            sha256sum terraform-provider-horizonview-darwin_${{ matrix.arch }}.zip >> checksums.txt
-          else
-            sha256sum terraform-provider-horizonview-linux_${{ matrix.arch }}.zip >> checksums.txt
-          fi
-        shell: bash
-
-      - name: Upload Checksum File
-        uses: actions/upload-artifact@v4
-        with:
-          name: checksums
-          path: checksums.txt
-
+          name: terraform-provider-horizonview-${{ matrix.os }}
+          path: terraform-provider-horizonview-${{ matrix.os }}.zip
+          
       - name: Test Code
-        run: |
-          go test -json > TestResults-${{ matrix.os }}-${{ matrix.arch }}.json
-        shell: bash
         working-directory: ./src
+        run: go test -o .terraform-provider-horizonview -json > TestResults-${{ matrix.os }}.json
+        shell: bash
 
       - name: Upload Test Results
         uses: actions/upload-artifact@v4
         with:
-          name: Go-results-${{ matrix.os }}-${{ matrix.arch }}
-          path: src/TestResults-${{ matrix.os }}-${{ matrix.arch }}.json
+          name: Go-results-${{ matrix.os }}
+          path: src/TestResults-${{ matrix.os }}.json
