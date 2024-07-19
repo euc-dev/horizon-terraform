@@ -53,16 +53,29 @@ jobs:
           sha256sum terraform-provider-horizonview-windows_amd64.zip | sed 's/ .*/ terraform-provider-horizonview-windows_amd64.zip/' >> checksums.txt
         shell: pwsh
 
-      - name: Upload Build Artifacts
+      - name: Upload Build Artifacts on Linux
+        if: runner.os == 'Linux'
         uses: actions/upload-artifact@v4
         with:
-          name: terraform-provider-horizonview-${{ matrix.os }}-${{ matrix.arch }}
-          path: |
-            terraform-provider-horizonview-linux_amd64.zip
-            terraform-provider-horizonview-darwin_amd64.zip
-            terraform-provider-horizonview-windows_amd64.zip
+          name: terraform-provider-horizonview-linux_amd64
+          path: terraform-provider-horizonview-linux_amd64.zip
+      
+      - name: Upload Build Artifacts on macOS
+        if: runner.os == 'macOS'
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-provider-horizonview-darwin_amd64
+          path: terraform-provider-horizonview-darwin_amd64.zip
+      
+      - name: Upload Build Artifacts on Windows
+        if: runner.os == 'Windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-provider-horizonview-windows_amd64
+          path: terraform-provider-horizonview-windows_amd64.zip
 
       - name: Upload Checksum File
+        if: always() 
         uses: actions/upload-artifact@v4
         with:
           name: checksums
