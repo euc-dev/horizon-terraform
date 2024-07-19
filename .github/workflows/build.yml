@@ -43,7 +43,7 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           zip -j terraform-provider-horizonview-darwin_amd64.zip src/terraform-provider-horizonview
-          sha256sum terraform-provider-horizonview-darwin_amd64.zip | sed 's/ .*/ terraform-provider-horizonview-darwin_amd64.zip/' >> checksums.txt
+          shasum -a 256 terraform-provider-horizonview-darwin_amd64.zip | sed 's/ .*/ terraform-provider-horizonview-darwin_amd64.zip/' >> checksums.txt
         shell: bash
 
       - name: Compress Build Artifacts on Windows
