@@ -44,14 +44,10 @@ jobs:
         run: |
           if [[ "${{ runner.os }}" == "Linux" ]]; then
             zip -j terraform-provider-horizonview-linux_amd64.zip src/terraform-provider-horizonview
-            sha256sum terraform-provider-horizonview-linux_amd64.zip | sed 's/ .*/ terraform-provider-horizonview-linux_amd64.zip/' >> checksums.txt
           elif [[ "${{ runner.os }}" == "macOS" ]]; then
             zip -j terraform-provider-horizonview-darwin_amd64.zip src/terraform-provider-horizonview
-            shasum -a 256 terraform-provider-horizonview-darwin_amd64.zip | sed 's/ .*/ terraform-provider-horizonview-darwin_amd64.zip/' >> checksums.txt
           elif [[ "${{ runner.os }}" == "Windows" ]]; then
             Compress-Archive -Path src\terraform-provider-horizonview.exe -DestinationPath terraform-provider-horizonview-windows_amd64.zip
-            # Use certutil to compute SHA256 checksum on Windows
-            certutil -hashfile terraform-provider-horizonview-windows_amd64.zip SHA256 | findstr /v "hash" | sed 's/ .*/ terraform-provider-horizonview-windows_amd64.zip/' >> checksums.txt
           fi
         shell: bash
 
@@ -76,13 +72,6 @@ jobs:
           name: terraform-provider-horizonview-windows_amd64
           path: terraform-provider-horizonview-windows_amd64.zip
 
-      - name: Upload Checksum File
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: checksums
-          path: checksums.txt
-          
       - name: Test Code
         working-directory: ./src
         run: go test -o .terraform-provider-horizonview -json > TestResults-${{ matrix.os }}.json
