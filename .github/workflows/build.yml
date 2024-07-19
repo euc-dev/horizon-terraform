@@ -32,24 +32,48 @@ jobs:
         shell: bash
         working-directory: ./src
           
-      - name: Compress Build Artifacts on Linux and macOS
-        if: runner.os != 'Windows'
+      - name: Compress Build Artifacts on Linux
+        if: runner.os == 'Linux'
         run: |
-          cd src
-          zip -r -9 terraform-provider-horizonview-${{ matrix.os }}.zip terraform-provider-horizonview
+          zip -j terraform-provider-horizonview-linux_amd64.zip src/terraform-provider-horizonview
+        shell: bash
+
+      - name: Compress Build Artifacts on macOS
+        if: runner.os == 'macOS'
+        run: |
+          zip -j terraform-provider-horizonview-darwin_amd64.zip src/terraform-provider-horizonview
         shell: bash
 
       - name: Compress Build Artifacts on Windows
         if: runner.os == 'Windows'
         run: |
-          Compress-Archive -Path src\terraform-provider-horizonview.exe -DestinationPath terraform-provider-horizonview-${{ matrix.os }}.zip
+          Compress-Archive -Path src\terraform-provider-horizonview.exe -DestinationPath terraform-provider-horizonview-windows_amd64.zip
         shell: pwsh
 
-      - name: Upload Compressed Artifacts
+      - name: Generate Checksum
+        run: |
+          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+            sha256sum terraform-provider-horizonview-windows_amd64.zip >> checksums.txt
+          elif [[ "${{ matrix.os }}" == "macos-latest" ]]; then
+            sha256sum terraform-provider-horizonview-darwin_amd64.zip >> checksums.txt
+          else
+            sha256sum terraform-provider-horizonview-linux_amd64.zip >> checksums.txt
+        shell: bash
+
+      - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: terraform-provider-horizonview-${{ matrix.os }}
-          path: terraform-provider-horizonview-${{ matrix.os }}.zip
+          name: terraform-provider-horizonview-${{ matrix.os }}-${{ matrix.arch }}
+          path: |
+            terraform-provider-horizonview-linux_amd64.zip
+            terraform-provider-horizonview-darwin_amd64.zip
+            terraform-provider-horizonview-windows_amd64.zip
+
+      - name: Upload Checksum File
+        uses: actions/upload-artifact@v4
+        with:
+          name: checksums
+          path: checksums.txt
           
       - name: Test Code
         working-directory: ./src
