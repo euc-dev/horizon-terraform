@@ -40,54 +40,41 @@ jobs:
         shell: bash
         working-directory: ./src
 
-      - name: Compress Build Artifacts
+      - name: Compress Build Artifacts and Generate Checksum
+        run: |
+          if [[ "${{ runner.os }}" == "Linux" ]]; then
+            zip -j terraform-provider-horizonview-linux_amd64.zip src/terraform-provider-horizonview
+            sha256sum terraform-provider-horizonview-linux_amd64.zip | sed 's/ .*/ terraform-provider-horizonview-linux_amd64.zip/' >> checksums.txt
+          elif [[ "${{ runner.os }}" == "macOS" ]]; then
+            zip -j terraform-provider-horizonview-darwin_amd64.zip src/terraform-provider-horizonview
+            shasum -a 256 terraform-provider-horizonview-darwin_amd64.zip | sed 's/ .*/ terraform-provider-horizonview-darwin_amd64.zip/' >> checksums.txt
+          elif [[ "${{ runner.os }}" == "Windows" ]]; then
+            Compress-Archive -Path src\terraform-provider-horizonview.exe -DestinationPath terraform-provider-horizonview-windows_amd64.zip
+            # Use certutil to compute SHA256 checksum on Windows
+            certutil -hashfile terraform-provider-horizonview-windows_amd64.zip SHA256 | findstr /v "hash" | sed 's/ .*/ terraform-provider-horizonview-windows_amd64.zip/' >> checksums.txt
+          fi
+        shell: bash
+
+      - name: Upload Linux Build Artifacts
         if: runner.os == 'Linux'
-        run: |
-          zip -j terraform-provider-horizonview-linux_amd64.zip src/terraform-provider-horizonview
-          sha256sum terraform-provider-horizonview-linux_amd64.zip | sed 's/ .*/ terraform-provider-horizonview-linux_amd64.zip/' >> checksums.txt
-        shell: bash
-
-      - name: Compress Build Artifacts
-        if: runner.os == 'macOS'
-        run: |
-          zip -j terraform-provider-horizonview-darwin_amd64.zip src/terraform-provider-horizonview
-          shasum -a 256 terraform-provider-horizonview-darwin_amd64.zip | sed 's/ .*/ terraform-provider-horizonview-darwin_amd64.zip/' >> checksums.txt
-        shell: bash
-
-      - name: Compress Build Artifacts
-        if: runner.os == 'Windows'
-        run: |
-          Compress-Archive -Path src\terraform-provider-horizonview.exe -DestinationPath terraform-provider-horizonview-windows_amd64.zip
-          sha256sum terraform-provider-horizonview-windows_amd64.zip | sed 's/ .*/ terraform-provider-horizonview-windows_amd64.zip/' >> checksums.txt
-        shell: pwsh
-
-  upload:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Download Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: terraform-provider-horizonview-linux_amd64.zip
-          path: ./artifacts
-
-      - name: Download Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: terraform-provider-horizonview-darwin_amd64.zip
-          path: ./artifacts
-
-      - name: Download Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: terraform-provider-horizonview-windows_amd64.zip
-          path: ./artifacts
-
-      - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: terraform-provider-horizonview
-          path: ./artifacts
+          name: terraform-provider-horizonview-linux_amd64
+          path: terraform-provider-horizonview-linux_amd64.zip
+
+      - name: Upload macOS Build Artifacts
+        if: runner.os == 'macOS'
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-provider-horizonview-darwin_amd64
+          path: terraform-provider-horizonview-darwin_amd64.zip
+
+      - name: Upload Windows Build Artifacts
+        if: runner.os == 'Windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-provider-horizonview-windows_amd64
+          path: terraform-provider-horizonview-windows_amd64.zip
 
       - name: Upload Checksum File
         if: always()
@@ -95,3 +82,16 @@ jobs:
         with:
           name: checksums
           path: checksums.txt
+          
+      - name: Test Code
+        working-directory: ./src
+        run: go test -o .terraform-provider-horizonview -json > TestResults-${{ matrix.os }}.json
+        shell: bash
+
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: Go-results-${{ matrix.os }}
+          path: src/TestResults-${{ matrix.os }}.json
+
+  
