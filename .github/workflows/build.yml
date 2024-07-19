@@ -40,16 +40,23 @@ jobs:
         shell: bash
         working-directory: ./src
 
-      - name: Compress Build Artifacts and Generate Checksum
+      - name: Compress Build Artifacts
+        if: runner.os == 'Linux'
         run: |
-          if [[ "${{ runner.os }}" == "Linux" ]]; then
-            zip -j terraform-provider-horizonview-linux_amd64.zip src/terraform-provider-horizonview
-          elif [[ "${{ runner.os }}" == "macOS" ]]; then
-            zip -j terraform-provider-horizonview-darwin_amd64.zip src/terraform-provider-horizonview
-          elif [[ "${{ runner.os }}" == "Windows" ]]; then
-            Compress-Archive -Path src\terraform-provider-horizonview.exe -DestinationPath terraform-provider-horizonview-windows_amd64.zip
-          fi
+          zip -j terraform-provider-horizonview-linux_amd64.zip src/terraform-provider-horizonview
         shell: bash
+
+      - name: Compress Build Artifacts
+        if: runner.os == 'macOS'
+        run: |
+          zip -j terraform-provider-horizonview-darwin_amd64.zip src/terraform-provider-horizonview
+        shell: bash
+
+      - name: Compress Build Artifacts
+        if: runner.os == 'Windows'
+        run: |
+          Compress-Archive -Path src\terraform-provider-horizonview.exe -DestinationPath terraform-provider-horizonview-windows_amd64.zip
+        shell: pwsh
 
       - name: Upload Linux Build Artifacts
         if: runner.os == 'Linux'
