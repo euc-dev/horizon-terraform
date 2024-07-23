@@ -48,6 +48,8 @@ jobs:
           echo "new_version=$new_version" >> $GITHUB_ENV
 
       - name: Create New Tag
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           new_version=${{ env.new_version }}
           git config user.email "bsg@omnissa.com"
