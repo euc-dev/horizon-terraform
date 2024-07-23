@@ -55,7 +55,7 @@ jobs:
           git config user.email "bsg@omnissa.com"
           git config user.name "guru1203-dev"
           git tag "v$new_version"
-          git push https://x-access-token:${GH_TOKEN}@github.com/owner/repo.git "v$new_version"
+          git push https://x-access-token:${GH_TOKEN}@github.com/guru1203-dev/euc-dev/horizon-terraform.git "v$new_version"
 
       - name: Build Provider
         run: |
