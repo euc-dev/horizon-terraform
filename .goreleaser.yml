@@ -1,0 +1,30 @@
+project_name: terraform-provider-horizonview
+
+permissions:
+  contents: write
+
+builds:
+  - os: 
+      - windows
+      - linux
+      - darwin
+    arch:
+      - amd64
+    binary: terraform-provider-horizonview
+    env:
+      - CGO_ENABLED=0
+archives:
+  - format: zip
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - "terraform-provider-horizonview*"
+checksum:
+  name_template: checksums.txt"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^build'
+      - '^sample-workflows'
+      - '^docs'
