@@ -33,7 +33,7 @@ jobs:
         id: get-latest-tag
         run: |
           git fetch --tags
-          latest_tag=$(git describe --tags $(git rev-list --tags --max-count=1) 2>/dev/null || echo "0.0.0")
+          latest_tag=$(git describe --tags $(git rev-list --tags --max-count=1) 2>/dev/null || echo "1.0.0")
           echo "Latest tag: $latest_tag"
           echo "latest_tag=$latest_tag" >> $GITHUB_ENV
 
@@ -53,11 +53,11 @@ jobs:
       - name: Create New Tag
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          new_version: ${{ steps.set-version.outputs.new_version }}
         run: |
-          new_version=${{ steps.set-version.outputs.new_version }}
           git config user.email "bsg@omnissa.com"
           git config user.name "guru1203-dev"
-          git tag "v$new_version"
+          git tag "v${{ env.new_version }}"
           git push https://x-access-token:${GH_TOKEN}@github.com/euc-dev/horizon-terraform.git "v$new_version"
 
   build:
