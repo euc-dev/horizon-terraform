@@ -1,7 +1,7 @@
 archives:
   - format: zip
+    name_template: 'terraform-provider-horizonview_v{{ .Version }}_{{ .Os }}_{{ .Arch }}'
 builds:
-  - main: ./src/
   - env:
       - CGO_ENABLED=0
     goos:
@@ -10,11 +10,13 @@ builds:
       - windows
     goarch:
       - amd64
+    ignore:
+      - goarch: '386'
     binary: 'terraform-provider-horizonview_v{{ .Version }}'
 checksum:
   name_template: 'checksums.txt'
 snapshot:
-  name_template: "{{ incpatch .Version }}-next"
+  name_template: "{{ incpatch .Version }}"
 changelog:
   sort: asc
   filters:
