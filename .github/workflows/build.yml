@@ -50,18 +50,25 @@ jobs:
           echo "::set-output name=new_version::$new_version"
           echo "new_version=$new_version" >> $GITHUB_ENV
 
-      - name: Create New Tag
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          new_version: ${{ steps.set-version.outputs.new_version }}
-        run: |
-          git config user.email "bsg@omnissa.com"
-          git config user.name "guru1203-dev"
-          git tag "v${{ env.new_version }}"
-          git push https://x-access-token:${GH_TOKEN}@github.com/euc-dev/horizon-terraform.git "v${{ env.new_version }}"
+  create_tag:
+      needs: set_version
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkout Code
+          uses: actions/checkout@v4
+          
+        - name: Create New Tag
+          env:
+            GH_TOKEN: ${{ secrets.GH_TOKEN }}
+            new_version: ${{ needs.set_version.outputs.new_version }}
+          run: |
+            git config user.email "bsg@omnissa.com"
+            git config user.name "guru1203-dev"
+            git tag "v${{ env.new_version }}"
+            git push https://x-access-token:${GH_TOKEN}@github.com/euc-dev/horizon-terraform.git "v${{ env.new_version }}"
 
   build:
-    needs: set_version
+    needs: [set_version, create_tag]
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest]
