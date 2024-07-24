@@ -106,8 +106,8 @@ jobs:
       - name: Compress Build Artifacts
         if: runner.os == 'Windows'
         run: |
-          version=${{ needs.set_version.outputs.new_version }}
-          Compress-Archive -Path src\terraform-provider-horizonview-${version}.exe -DestinationPath terraform-provider-horizonview-${version}-windows_amd64.zip
+          $version=${{ needs.set_version.outputs.new_version }}
+          Compress-Archive -Path src\terraform-provider-horizonview-$version.exe -DestinationPath terraform-provider-horizonview-$version-windows_amd64.zip
         shell: pwsh
   
       - name: Upload Linux Build Artifacts
