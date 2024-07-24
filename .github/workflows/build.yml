@@ -58,7 +58,7 @@ jobs:
           git config user.email "bsg@omnissa.com"
           git config user.name "guru1203-dev"
           git tag "v${{ env.new_version }}"
-          git push https://x-access-token:${GH_TOKEN}@github.com/euc-dev/horizon-terraform.git "v$new_version"
+          git push https://x-access-token:${GH_TOKEN}@github.com/euc-dev/horizon-terraform.git "v${{ env.new_version }}"
 
   build:
     needs: set_version
