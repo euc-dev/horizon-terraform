@@ -1,31 +1,27 @@
-project_name: terraform-provider-horizonview
-
-permissions:
-  contents: write
-
-builds:
-  - main: ./src/
-  - os: 
-      - windows
-      - linux
-      - darwin
-    arch:
-      - amd64
-    binary: terraform-provider-horizonview
-    env:
-      - CGO_ENABLED=0
 archives:
   - format: zip
-    name_template: "terraform-provider-horizonview_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
-    files:
-      - "terraform-provider-horizonview*"
+builds:
+  - main: ./src/
+  - env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+    binary: 'terraform-provider-horizonview_v{{ .Version }}'
 checksum:
-  name_template: checksums.txt"
+  name_template: 'checksums.txt'
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
 changelog:
   sort: asc
   filters:
     exclude:
-      - '^docs:'
-      - '^build'
-      - '^sample-workflows'
       - '^docs'
+      - '^test'
+      - '^chore'
+      - '^build'
+      - '^docs'
+      - '^sample-scripts'
