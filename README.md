@@ -1,33 +1,25 @@
-Plugin for Terraform Provider for Horizon View
+# Plugin for Terraform Provider for Horizon View
 
 Omnissa® has developed a custom Terraform provider for automating Horizon View product deployment. Using Terraform with Horizon View provider, you can deploy Horizon servers or upgrade the existing instance. The provider is developed and maintained by Omnissa® . Please note that this provider is still in tech preview.
 
+## Plugin for Terraform Provider for Horizon View Documentation
 
-Plugin for Terraform Provider for Horizon View Documentation
+Navigating the repository
 
-  Navigating the repository
-
-  •internal folder - Contains the Horizon View provider implementation for Terraform
-
-  •sample-workflows - Contains the examples for users to use Horizon View custom provider for install and upgrade of Horizon infrastructure.
-
-
+- internal folder - Contains the Horizon View provider implementation for Terraform
+- sample-workflows - Contains the examples for users to use Horizon View custom provider for install and upgrade of Horizon infrastructure.
 
 In the current release the provider supports the below list of actions:
 
-  . Creating a new role for Horizon Server Lifecycle Management
-  
-  . Assign the new role to specified horizon administrator
-  
-  . Register Horizon Server Package
-  
-  . Install Horizon Connection Server, Replica Server and Enrollment Server
-  
-  . Upgrade Horizon Connection Server, Replica Server and Enrollment Server
-   
+- Creating a new role for Horizon Server Lifecycle Management
+- Assign the new role to specified horizon administrator
+- Register Horizon Server Package
+- Install Horizon Connection Server, Replica Server and Enrollment Server
+- Upgrade Horizon Connection Server, Replica Server and Enrollment Server
 
+This repo is structured to feed into the developer.omnissa.com Developer Portal via the [](https://github.com/euc-dev/developer.omnissa.github.io) repo using MkDocs published by GitHub Pages. All documentation should be created in MarkDown format with the capabilities of MkDocs and the Material theme in mind under the /docs/sdks/ws1-sdk-uem-ios folder. This folder will be integrated into the [developer portal repo](https://github.com/euc-dev/developer.omnissa.github.io) when built using a GitHub Action.
 
-License
+## License
 
 This project is Licensed under the Mozilla Public License Version 2.0 ; you may not use this file except in compliance with the License. 
 
