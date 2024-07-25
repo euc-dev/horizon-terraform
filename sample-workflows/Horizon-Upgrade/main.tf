@@ -1,8 +1,8 @@
 terraform {
   required_providers {
     horizonview = {
-      source = "terraform-horizonview.com/horizonviewprovider/horizonview"
-      version= "1.1.123"
+      source = "custom/horizonviewprovider/horizonview"
+      version= "0.1.0"
     }
     null = {
       source  = "hashicorp/null"
