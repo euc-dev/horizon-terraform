@@ -1,6 +1,6 @@
 Plugin for Terraform Provider for Horizon View
 
-Omnissa® has developed a custom Terraform provider for automating Horizon View. Using Terraform with Horizon View provider, you can deploy Horizon servers or upgrade the existing instance. The provider is developed and maintained by Omnissa® . Please note that this provider is still in tech preview.
+Omnissa® has developed a custom Terraform provider for automating Horizon View product deployment. Using Terraform with Horizon View provider, you can deploy Horizon servers or upgrade the existing instance. The provider is developed and maintained by Omnissa® . Please note that this provider is still in tech preview.
 
 
 Plugin for Terraform Provider for Horizon View Documentation
