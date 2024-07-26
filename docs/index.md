@@ -6,13 +6,12 @@ hide:
   - toc
 ---
 
-# Horizon Provider for Terraform
-
-<div class="grid cards" markdown>
-
-- ![Horizon](assets/logos/horizon-logo.png){ width="300" }
-- ![Terraform](assets/logos/terraform-logo.png){ width="300" }
-
-</div>
+Provide a Getting Start Guide here.
 
 This repository container the source and documentation for the Horizon Provider for Terraform.
+
+reference 
+- provider
+- resources
+- data
+
