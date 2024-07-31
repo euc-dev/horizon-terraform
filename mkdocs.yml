@@ -146,5 +146,5 @@ markdown_extensions:
 nav:
   - Horizon Terraform Plugin: index.md
   - Provider: provider/index.md
-  - Resources: resoucres/index.md
+  - Resources: resources/index.md
   - Data: data/index.md
