@@ -3,7 +3,11 @@
 {
     "name": "mkdocs devcontainer",
     // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
+<<<<<<< Updated upstream
     // "image": "mcr.microsoft.com/devcontainers/base:bullseye",
+=======
+    // "image": "mcr.microsoft.com/devcontainers/base:bookworm",
+>>>>>>> Stashed changes
     "build": {
         "dockerfile": "Dockerfile"
     },
