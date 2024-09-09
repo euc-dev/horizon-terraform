@@ -53,6 +53,7 @@ func Provider() *schema.Provider {
 			"horizonview_ad_precheck":  dataSourceActiveDirectoryValidation(),
 			"horizonview_sys_precheck": dataSourceSystemValidation(),
 			"horizonview_vc_precheck":  dataSourceVCenterValidation(),
+			"horizonview_ldap_precheck": dataSourceLdapValidation(),
 		},
 		ConfigureContextFunc: providerConfigure,
 	}
