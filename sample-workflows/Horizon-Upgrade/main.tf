@@ -1,8 +1,13 @@
 terraform {
   required_providers {
     horizonview = {
+<<<<<<< HEAD
       source = "custom/horizonviewprovider/horizonview"
       version= "0.1.0"
+=======
+      source = "terraform-horizonview.com/horizonviewprovider/horizonview"
+      version= "0.1.1"
+>>>>>>> f143131 (provider code for ldap validation and updated upgrade flow sample script)
     }
     null = {
       source  = "hashicorp/null"
@@ -63,6 +68,48 @@ resource "null_resource" "sleep" {
   depends_on = [horizonview_package.upgrade_package]
 }
 
+data "horizonview_ldap_precheck" "ldapprecheck" {
+  depends_on             = [null_resource.sleep]
+}
+
+output "ldapprecheck_status" {
+  value = data.horizonview_ldap_precheck.ldapprecheck.consolidated_status
+}
+
+locals {
+  should_continue = (data.horizonview_ldap_precheck.ldapprecheck.consolidated_status == "PASS")
+}
+
+resource "null_resource" "initial_precheck" {
+  count = local.should_continue ? 1 : 0
+
+  provisioner "local-exec" {
+    command = "echo 'LDAP validation is successful. Executing next set of pre check...'"
+  }
+
+  depends_on = [data.horizonview_ldap_precheck.ldapprecheck]
+}
+
+data "horizonview_ldap_precheck" "ldapprecheck" {
+  depends_on             = [null_resource.sleep]
+}
+
+output "ldapprecheck_status" {
+  value = data.horizonview_ldap_precheck.ldapprecheck.consolidated_status
+}
+
+locals {
+  should_continue = (data.horizonview_ldap_precheck.ldapprecheck.consolidated_status == "PASS")
+}
+
+resource "null_resource" "control_flow" {
+  provisioner "local-exec" {
+    command = "if [ \"${local.should_continue}\" != \"true\" ]; then echo 'Ldap Validation Status is FAILED. Aborting further execution.' >&2; exit 1; else echo 'Ldap Validation Status is PASS. Continuing with the tasks...'; fi"
+    interpreter = ["sh", "-c"]
+  }
+
+  depends_on = [data.horizonview_ldap_precheck.ldapprecheck]
+}
 
 data "horizonview_ad_precheck" "adprecheck" {
   for_each = {
@@ -72,7 +119,7 @@ data "horizonview_ad_precheck" "adprecheck" {
   target_server_fqdn     = each.value[0]
   active_directory_fqdn  = var.pre_check_parameters["active_directory_fqdn"]
   target_cs_version      = var.pre_check_parameters["target_cs_version"]
-  depends_on             = [null_resource.sleep]
+  depends_on             = [null_resource.control_flow]
 }
 
 
@@ -90,7 +137,7 @@ data "horizonview_sys_precheck" "sysprecheck" {
   }
   target_server_fqdn     = each.value[0]
   target_cs_version      = var.pre_check_parameters["target_cs_version"]
-  depends_on             = [null_resource.sleep]
+  depends_on             = [null_resource.control_flow]
 }
 
 output "sysprecheck_consolidated_status" {
@@ -108,7 +155,7 @@ data "horizonview_vc_precheck" "vcprecheck" {
   vcenter_fqdn           = var.pre_check_parameters["vcenter_fqdn"]
   target_cs_version      = var.pre_check_parameters["target_cs_version"]
   vcenter_version        = var.pre_check_parameters["vcenter_version"]
-  depends_on             = [null_resource.sleep]
+  depends_on             = [null_resource.control_flow]
 }
 
 output "vcprecheck_consolidated_status" {
@@ -186,6 +233,7 @@ output "failed_precheck_servers" {
   value = local.failed_precheck_servers
 }
 
+
 resource "null_resource" "print_failed_precheck_servers" {
   triggers = {
     failed_precheck_servers = join(",", local.failed_precheck_servers)
@@ -216,4 +264,5 @@ resource "horizonview_upgrade_server" "upgrade_servers" {
   depends_on = [
   null_resource.sleep,
   null_resource.print_successful_precheck_servers]
+
 }
