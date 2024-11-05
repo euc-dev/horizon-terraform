@@ -1,13 +1,8 @@
 terraform {
   required_providers {
     horizonview = {
-<<<<<<< HEAD
       source = "custom/horizonviewprovider/horizonview"
-      version= "0.1.0"
-=======
-      source = "terraform-horizonview.com/horizonviewprovider/horizonview"
       version= "0.1.1"
->>>>>>> f143131 (provider code for ldap validation and updated upgrade flow sample script)
     }
     null = {
       source  = "hashicorp/null"
