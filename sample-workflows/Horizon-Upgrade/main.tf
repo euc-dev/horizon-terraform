@@ -1,9 +1,9 @@
 terraform {
   required_providers {
     horizonview = {
-      source = "custom/horizonviewprovider/horizonview"
+      source = "local/terraform-horizonview/horizonview"
       version= "0.1.1"
-    }
+}
     null = {
       source  = "hashicorp/null"
       version = "~> 3.0"
@@ -76,25 +76,18 @@ locals {
 }
 
 resource "null_resource" "initial_precheck" {
-  count = local.should_continue ? 1 : 0
+  count = 1
 
   provisioner "local-exec" {
-    command = "echo 'LDAP validation is successful. Executing next set of pre check...'"
-  }
-
-  depends_on = [data.horizonview_ldap_precheck.ldapprecheck]
-}
-
-data "horizonview_ldap_precheck" "ldapprecheck" {
-  depends_on             = [null_resource.sleep]
-}
-
-output "ldapprecheck_status" {
-  value = data.horizonview_ldap_precheck.ldapprecheck.consolidated_status
-}
-
-locals {
-  should_continue = (data.horizonview_ldap_precheck.ldapprecheck.consolidated_status == "PASS")
+    command = <<EOT
+    if [[ ${local.should_continue} == "true" ]]; then
+      echo "LDAP validation is successful. Executing next set of pre check..."
+    else
+      echo "LDAP Precheck failed. Exiting..."
+      exit 1
+    fi
+    EOT
+  }  
 }
 
 resource "null_resource" "control_flow" {
@@ -247,17 +240,43 @@ resource "null_resource" "print_successful_precheck_servers" {
   }
 }
 
+locals {
+  should_upgrade = local.failed_precheck_servers != null ? length(local.failed_precheck_servers) == 0 : true
+}
+
+resource "null_resource" "validate_precheck_result" {
+  count = 1
+
+  provisioner "local-exec" {
+    command = <<EOT
+    if [[ ${local.should_upgrade} == "true" ]]; then
+      echo "Proceeding with Upgrade..."
+    else
+      echo "Precheck failed. Exiting..."
+      exit 1
+    fi
+    EOT
+  }
+} 
+
+locals {
+  all_servers = flatten([
+    for group, servers in var.upgrade_target_servers_fqdn : servers
+  ])
+}
+
+
 resource "horizonview_upgrade_server" "upgrade_servers" {
-  count = length(local.successful_precheck_servers)
+  count = length(local.all_servers)
 
   domain            = var.upgrade_parameters["upgrade_domain"]
   password          = var.upgrade_parameters["upgrade_admin_password"]
   server_installer_package_id  = horizonview_package.upgrade_package.id
-  target_server_fqdn            = local.successful_precheck_servers[count.index]
+  target_server_fqdn            = local.all_servers[count.index]
   user_name         = var.upgrade_parameters["upgrade_admin_user"]
 
   depends_on = [
   null_resource.sleep,
-  null_resource.print_successful_precheck_servers]
+  null_resource.validate_precheck_result]
 
 }
