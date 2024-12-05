@@ -11,7 +11,6 @@ terraform {
   }
 }
 
-
 provider "horizonview" {
     server_url = var.server_url
     username   = var.username
@@ -35,7 +34,6 @@ locals {
   rs_server = var.install_target_servers_fqdn["Enrollment_Servers"]
 }
 
-
 resource "horizonview_role" "create" {
   description = "LCM administrator role."
   name = "LCM"
@@ -54,7 +52,6 @@ resource "horizonview_permissions" "permission" {
    }
   depends_on = [horizonview_role.create]
 }
-
 
 resource "horizonview_package" "Register"{
   fileurl = var.horizonview_package["fileurl"]
@@ -75,7 +72,6 @@ resource "null_resource" "sleep" {
   depends_on = [horizonview_package.Register]
 }
 
-
 data "horizonview_ad_precheck" "adprecheck" {
   for_each = {
     for fqdn, servers in var.install_target_servers_fqdn : fqdn => servers
@@ -86,8 +82,6 @@ data "horizonview_ad_precheck" "adprecheck" {
   target_cs_version      = var.pre_check_parameters["target_cs_version"]
   depends_on             = [null_resource.sleep]
 }
-
-
 
 output "ad_precheck_consolidated_status" {
   value = {
