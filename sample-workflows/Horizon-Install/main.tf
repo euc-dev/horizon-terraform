@@ -1,8 +1,8 @@
 terraform {
   required_providers {
     horizonview = {
-      source = "custom/horizonviewprovider/horizonview"
-      version= "0.1.0"
+      source = "local/terraform-horizonview/horizonview"
+      version= "0.1.1"
     }
     null = {
       source  = "hashicorp/null"
@@ -10,7 +10,6 @@ terraform {
     }
   }
 }
-
 
 provider "horizonview" {
     server_url = var.server_url
@@ -35,7 +34,6 @@ locals {
   rs_server = var.install_target_servers_fqdn["Enrollment_Servers"]
 }
 
-
 resource "horizonview_role" "create" {
   description = "LCM administrator role."
   name = "LCM"
@@ -55,7 +53,6 @@ resource "horizonview_permissions" "permission" {
   depends_on = [horizonview_role.create]
 }
 
-
 resource "horizonview_package" "Register"{
   fileurl = var.horizonview_package["fileurl"]
   file_size_in_bytes = var.horizonview_package["file_size_in_bytes"]
@@ -67,7 +64,6 @@ resource "horizonview_package" "Register"{
  depends_on = [horizonview_permissions.permission]
 }
 
-
 resource "null_resource" "sleep" {
   provisioner "local-exec" {
     command = "echo 'Sleeping for 180  seconds...' && sleep 180 && echo 'Done sleeping.'"
@@ -75,7 +71,6 @@ resource "null_resource" "sleep" {
 
   depends_on = [horizonview_package.Register]
 }
-
 
 data "horizonview_ad_precheck" "adprecheck" {
   for_each = {
@@ -87,8 +82,6 @@ data "horizonview_ad_precheck" "adprecheck" {
   target_cs_version      = var.pre_check_parameters["target_cs_version"]
   depends_on             = [null_resource.sleep]
 }
-
-
 
 output "ad_precheck_consolidated_status" {
   value = {
@@ -231,18 +224,28 @@ resource "null_resource" "print_successful_precheck_servers" {
   }
 }
 
-output "primary_connection_server_fqdn" {
-  value = local.primary_connection_server_fqdn
+locals {
+  should_continue = local.failed_precheck_servers != null ? length(local.failed_precheck_servers) == 0 : true
 }
 
-resource "local_file" "primary_connection_server" {
-  content  = local.primary_connection_server_fqdn
-  filename = "primary_connection_server.txt"
+resource "null_resource" "precheck_result" {
+  count = 1
+
+  provisioner "local-exec" {
+    command = <<EOT
+    if [[ ${local.should_continue} == "true" ]]; then
+      echo "Proceeding with Installation..."
+    else
+      echo "Precheck failed. Exiting..."
+      exit 1
+    fi
+    EOT
+  }
 }
 
 resource "horizonview_install_server" "install_cs" {
-  domain            = var.install_parameters["install_domain"]
-  password          = var.install_parameters["install_admin_password"]
+  domain = var.install_parameters["install_domain"]
+  password = var.install_parameters["install_admin_password"]
   server_installer_package_id  = horizonview_package.Register.id
   server_msi_install_spec {
     admin_sid                    = var.install_parameters["admin_sid"]
@@ -256,22 +259,20 @@ resource "horizonview_install_server" "install_cs" {
     server_instance_type         = "STANDARD_SERVER"
     vdm_ipprotocol_usage         = var.install_parameters["vdm_ipprotocol_usage"]
 }
-  target_server_fqdn            = local.install_connection_servers[0]
+  target_server_fqdn            = var.install_target_servers_fqdn["Connection_Server"][0]
   user_name         = var.install_parameters["install_admin_user"]
 
   depends_on = [
        null_resource.sleep,
        null_resource.print_successful_precheck_servers,
-       data.horizonview_ad_precheck.adprecheck,
-       data.horizonview_sys_precheck.sysprecheck,
-       data.horizonview_vc_precheck.vcprecheck]
+       null_resource.precheck_result]
 }
 
 resource "horizonview_install_server" "install_rs" {
-  count = length(local.install_replica_servers)
-
-  domain            = var.install_parameters["install_domain"]
-  password          = var.install_parameters["install_admin_password"]
+  count = length(var.install_target_servers_fqdn["Replica_Servers"])
+  target_server_fqdn = var.install_target_servers_fqdn["Replica_Servers"][count.index]
+  domain   = var.install_parameters["install_domain"]
+  password = var.install_parameters["install_admin_password"]
   server_installer_package_id  = horizonview_package.Register.id
   server_msi_install_spec {
     fips_enabled                 = var.install_parameters["fips_enabled"]
@@ -282,24 +283,22 @@ resource "horizonview_install_server" "install_rs" {
     primary_connection_server_fqdn = local.primary_connection_server_fqdn
     vdm_ipprotocol_usage         = var.install_parameters["vdm_ipprotocol_usage"]
   }
-  target_server_fqdn            = local.install_replica_servers[count.index]
-  user_name         = var.install_parameters["install_admin_user"]
+  user_name = var.install_parameters["install_admin_user"]
 
   depends_on = [
     null_resource.sleep,
     null_resource.print_successful_precheck_servers,
-    horizonview_install_server.install_cs,
-    data.horizonview_ad_precheck.adprecheck,
-    data.horizonview_sys_precheck.sysprecheck,
-    data.horizonview_vc_precheck.vcprecheck
+    null_resource.precheck_result,
+    horizonview_install_server.install_cs
   ]
 }
 
 resource "horizonview_install_server" "install_es" {
-  count = length(local.install_enrollment_servers)
+  count = length(var.install_target_servers_fqdn["Enrollment_Servers"])
+  target_server_fqdn = var.install_target_servers_fqdn["Enrollment_Servers"][count.index]
 
-  domain            = var.install_parameters["install_domain"]
-  password          = var.install_parameters["install_admin_password"]
+  domain  = var.install_parameters["install_domain"]
+  password = var.install_parameters["install_admin_password"]
   server_installer_package_id  = horizonview_package.Register.id
   server_msi_install_spec {
     fips_enabled                 = var.install_parameters["fips_enabled"]
@@ -308,15 +307,12 @@ resource "horizonview_install_server" "install_es" {
     server_instance_type         = "ENROLLMENT_SERVER"
     vdm_ipprotocol_usage         = var.install_parameters["vdm_ipprotocol_usage"]
   }
-  target_server_fqdn            = local.install_enrollment_servers[count.index]
-  user_name                     = "Administrator"
+  user_name = "Administrator"
 
   depends_on = [
     null_resource.sleep,
     null_resource.print_successful_precheck_servers,
-    horizonview_install_server.install_cs,
-    data.horizonview_ad_precheck.adprecheck,
-    data.horizonview_sys_precheck.sysprecheck,
-    data.horizonview_vc_precheck.vcprecheck
+    null_resource.precheck_result,
+    horizonview_install_server.install_cs
   ]
 }
