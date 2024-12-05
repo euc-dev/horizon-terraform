@@ -11,7 +11,6 @@ terraform {
   }
 }
 
-
 provider "horizonview" {
     server_url = var.server_url
     username   = var.username
@@ -42,7 +41,6 @@ resource "horizonview_permissions" "permission" {
   depends_on = [horizonview_role.create]
 }
 
-
 resource "horizonview_package" "upgrade_package"{
   fileurl = var.horizonview_package["fileurl"]
   file_size_in_bytes = var.horizonview_package["file_size_in_bytes"]
@@ -53,7 +51,6 @@ resource "horizonview_package" "upgrade_package"{
 
   depends_on = [horizonview_permissions.permission]
 }
-
 
 resource "null_resource" "sleep" {
   provisioner "local-exec" {
